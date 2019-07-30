@@ -1,8 +1,15 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
+/** Redux */
+import { connect } from 'react-redux';
+import { agregarCita } from '../actions/citasActions';
+import { validarFormulario, mostrarError } from '../actions/errorActions';
+import uuid from 'uuid';
+
 class AgregarCita extends Component {
 
+    
     // refs
     nombreMascotaRef = React.createRef();
     propietarioRef = React.createRef();
@@ -10,28 +17,49 @@ class AgregarCita extends Component {
     horaRef = React.createRef();
     sintomasRef = React.createRef();
 
+    componentWillMount() {
+        this.props.validarFormulario(false);
+    }
+    
     // leer la cita
     crearNuevaCita = (e) => {
         e.preventDefault();
+        
+        const mascota = this.nombreMascotaRef.current.value,
+              propietario = this.propietarioRef.current.value,
+              fecha = this.fechaRef.current.value,
+              hora = this.horaRef.current.value,
+              sintomas = this.sintomasRef.current.value;
 
-        // crear el objeto
-        const nuevaCita = {
-            mascota: this.nombreMascotaRef.current.value,
-            propietario:  this.propietarioRef.current.value,
-            fecha:  this.fechaRef.current.value,
-            hora:  this.horaRef.current.value,
-            sintomas:  this.sintomasRef.current.value
+
+        if( mascota === '' ||  propietario === '' || fecha === '' || hora === '' ||sintomas === '' ) {
+            this.props.validarFormulario(true);
+        } else {
+
+            // crear el objeto
+            const nuevaCita = {
+                id: uuid(),
+                mascota ,
+                propietario ,
+                fecha  ,
+                hora ,
+                sintomas
+            }
+            console.log(nuevaCita);
+
+            this.props.validarFormulario(false);
+
+            // enviar por props.
+            this.props.agregarCita(nuevaCita);
+
+            // reset al form (opcional)
+            e.currentTarget.reset();
         }
-        console.log(nuevaCita);
-
-        // enviar por props.
-        this.props.crearCita(nuevaCita);
-
-        // reset al form (opcional)
-        e.currentTarget.reset();
     }
 
     render() {
+        const existeError = this.props.error;
+        
         return(
         <div className="card mt-5">
                 <div className="card-body">
@@ -74,13 +102,25 @@ class AgregarCita extends Component {
                             </div>
                         </div>
                     </form>
+                    { existeError ? <div className="alert alert-danger text-center">Todos los Campos son Obligatorios</div> : ''}
                 </div>
         </div>
         )
     }
 }
+
 AgregarCita.propTypes = {
-    crearCita : PropTypes.func.isRequired
+    agregarCita : PropTypes.func.isRequired,
+    validarFormulario : PropTypes.func.isRequired,
+    mostrarError : PropTypes.func.isRequired
 }
 
-export default AgregarCita;
+// primer parametro
+const mapStateToProps = (state) => ({
+    citas: state.citas.citas,
+    error: state.error.error
+});
+
+
+export default connect(mapStateToProps, { agregarCita, validarFormulario, mostrarError })(AgregarCita);
+//{agregarCita} viene de citasActions
