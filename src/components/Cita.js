@@ -1,10 +1,20 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
+/** Redux */
+import { connect } from 'react-redux';
+import { borrarCita } from '../actions/citasActions';
+
+
 class Cita extends Component {
 
+    eliminarCita = () => {
+        this.props.borrarCita( this.props.info.id );
+    }
+
     render() { 
-        const {fecha, hora, mascota, propietario, sintomas} = this.props.info; 
+        const { fecha, hora, mascota, propietario, sintomas} = this.props.info; 
+        // console.log(this.props.info);
         return (
             <div className="media mt-3">
                 <div className="media-body">
@@ -15,7 +25,7 @@ class Cita extends Component {
                     <p className="card-text"><span>Sintomas:</span> <br />
                     {sintomas}</p>
                     <button 
-                        onClick={ () => this.props.borrarCita(this.props.idCita) }
+                        onClick={ this.eliminarCita }
                         className="btn btn-danger">Borrar &times;
                     </button>
                 </div>
@@ -32,7 +42,8 @@ Cita.propTypes = {
         propietario : PropTypes.string,
         sintomas : PropTypes.string
     }),
+    borrarCita: PropTypes.func.isRequired
 }
 
  
-export default Cita;
+export default connect(null, { borrarCita })(Cita);
